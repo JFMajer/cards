@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"math/rand"
 	"os"
 	"strings"
 )
@@ -24,6 +26,7 @@ func newDeck() deck {
 			d = append(d, card)
 		}
 	}
+	d.shuffle()
 	return d
 }
 
@@ -53,21 +56,37 @@ func (d deck) toByteSlice() []byte {
 // saveToFile saves the deck to a file specified by the filename parameter.
 // It converts the deck into a byte slice and writes it to the file.
 func (d deck) saveToFile(filename string) error {
-	deckStringified := d.toByteSlice()
-	err := os.WriteFile(filename, deckStringified, 0666)
+	deckByteSliced:= d.toByteSlice()
+	err := os.WriteFile(filename, deckByteSliced, 0666)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func readFromFile(filename string) (deck, error) {
+// newDeckFromFile reads a deck from a file specified by the filename.
+// It attempts to open and read the file, returning an error if any issues arise.
+// If successful, it splits the file content by new lines to create a deck of cards.
+// Returns the new deck and nil if no error occurs.
+func newDeckFromFile(filename string) (deck, error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
+		log.Printf("Error reading file '%s': %v ", filename, err)
 		return nil, err
 	}
 	d := strings.Split(string(data), "\n")
 	return deck(d), nil
+}
+
+// shuffle randomizes the order of cards in the deck.
+// It iterates over the deck, swapping each card with another at a random position.
+// This is achieved using the math/rand Intn function to generate random indices.
+// The function modifies the deck in place and does not return any value.
+func (d deck) shuffle() {
+	for i := range d {
+		newPosition := rand.Intn(len(d))
+		d[i], d [newPosition] = d[newPosition], d[i]
+	}
 }
 
 
